@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <link href='http://fonts.googleapis.com/css?family=Bitter' rel='stylesheet' type='text/css'>
+	<link href='ecig.css' rel='stylesheet' type='text/css'>
+   <link href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.0.2/css/bootstrap.css" rel="stylesheet" media="screen">
+   
+  
+   
+  </head>
+ <body>
+      <div id="info-box" class="col-md-4"> </div>
+<div id="map-container"></div>
+     
+<!-- Replace the value of the key parameter with your own API key. -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsKlHVAOuzE-jumMBqD2s8MkBfOlng0tY&libraries=drawing,geometry&callback=initMap">
+</script>
+     <script>
+         var map,
+         colorValues = [
+				"yellow", //0
+				"yellow", //1
+				"red", //2
+				"black", //3
+		
+        ];
+
+function initMap() {
+  map = new google.maps.Map(document.getElementById('map-container'), {
+    center: {lat: 40.495, lng: -111.93},
+     zoom: 16
+  });
+
+  // Load GeoJSON.
+  map.data.loadGeoJson('https://rawgit.com/mestergaard/geojsonmaps/master/Addressmapping2.geojson',{idPropertyName:'id'});
+
+   map.data.setStyle(function(feature) {
+					return /** @type {google.maps.Data.StyleOptions} */({
+					  icon: {
+              path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+              scale: 5,
+              fillColor: '#f5f',
+              fillOpacity: 1,
+              strokeWeight: 0
+            }
+                    });
+      }); 
+
+
+   
+    
+  var drawingManager = new google.maps.drawing.DrawingManager({
+    drawingControl: true,
+    drawingControlOptions: {
+      position: google.maps.ControlPosition.TOP_CENTER,
+      drawingModes: ['polygon']
+    }
+  });
+    
+  drawingManager.setMap(map);
+   var letters = [];
+     var completelyContained = 0;
+        var afuera = 0;
+  google.maps.event.addListener(drawingManager, 'polygoncomplete', function(polygon) {
+    var coordinates = (polygon.getPath().getArray());
+      
+    map.data.forEach(function(feature) {
+      var id = feature.getId();
+     // var color = feature.getProperty("id");
+      
+     //letters = letter[id];
+      var geometry = feature.getGeometry();
+      var type = geometry.getType();
+      var letter = [];
+        var contained = false;
+        var content = "";
+        var bounds = new google.maps.LatLngBounds();
+   
+         if (google.maps.geometry.poly.containsLocation(feature.getGeometry().get(), polygon)) {
+            completelyContained++;
+             feature.setProperty("selected", true);
+             feature.setProperty("Iconcolor", 1);
+             letter.push(feature.getProperty("Last Name"));
+             letter.push(feature.getProperty("First Name"));
+             letter.push(feature.getProperty("Address 1"));
+             letter.push(feature.getProperty("id"));
+             letter.push(feature.getProperty("Iconcolor"));
+             letters.push(letter);
+           
+             
+         } else {feature.setProperty("selected", false);
+             feature.setProperty("Iconcolor", 2);}
+    });
+     map.data.setStyle(function(feature) {
+					return /** @type {google.maps.Data.StyleOptions} */({
+					  icon: {
+              path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+              scale: 5,
+              fillColor: colorValues[feature.getProperty("Iconcolor")],
+              fillOpacity: 1,
+              strokeWeight: 0
+            }
+                    });
+      }); 
+      var infowindow = new google.maps.InfoWindow();
+
+      
+          content = letters.toString();
+     
+        
+					
+        infowindow.setContent(content);
+        infowindow.setPosition({lat: 40.495, lng: -111.93});
+        infowindow.open(map);
+        var i;
+          for (i = 0; i < completelyContained; i++) {document.getElementById('info-box').innerHTML = letters[i]}
+            ;
+             
+  });
+}</script>
+    
+    </body>
+    </html>
